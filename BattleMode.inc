@@ -3,6 +3,7 @@
   Fix slow rendering outside boundary
   Fix boundary disappearing
   Enhance AI
+  Large screen render error
 }
 
 const

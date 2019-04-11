@@ -8,8 +8,8 @@ type
   var
     i, j, l, k, d, r1, r2, choice: integer;
     ts: real;
-    board: array[1..63, 1..79] of integer;  //1: wall, 2: snake, 3: food
-    sBody: array[1..63 * 79] of point;
+    board: array[1..100, 1..100] of integer;  //1: wall, 2: snake, 3: food
+    sBody: array[1..100 * 100] of point;
     score: integer;
     dead: boolean;
     c:  char;
@@ -20,24 +20,24 @@ type
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     dead := False;
     d  := 1;
-    for i := 1 to min(scrH - 1, 79) do
-      for j := 1 to min(scrW div 2, 63) do
-        board[j, i] := Ord((i = 1) or (j = 1) or (i = min(scrH - 1, 79)) or
-          (j = min(scrW div 2, 63)));
+    for i := 1 to min(scrH - 1, 100) do
+      for j := 1 to min(scrW div 2, 100) do
+        board[j, i] := Ord((i = 1) or (j = 1) or (i = min(scrH - 1, 100)) or
+          (j = min(scrW div 2, 100)));
     for i := 1 to 1000 do
-      board[random(min(scrW div 2, 63) - 2) + 2, random(min(scrH - 1, 79) - 2) + 2] := 3;
-    sBody[1].x := min(scrW div 4, 63) - 2;
-    sBody[1].y := min(scrH - 1, 79) div 2;
-    sBody[2].x := min(scrW div 4, 63) - 1;
-    sBody[2].y := min(scrH - 1, 79) div 2;
-    sBody[3].x := min(scrW div 4, 63);
-    sBody[3].y := min(scrH - 1, 79) div 2;
+      board[random(min(scrW div 2, 100) - 2) + 2, random(min(scrH - 1, 100) - 2) + 2] := 3;
+    sBody[1].x := min(scrW div 4, 100) - 2;
+    sBody[1].y := min(scrH - 1, 100) div 2;
+    sBody[2].x := min(scrW div 4, 100) - 1;
+    sBody[2].y := min(scrH - 1, 100) div 2;
+    sBody[3].x := min(scrW div 4, 100);
+    sBody[3].y := min(scrH - 1, 100) div 2;
     gotoxy(1, 1);
-    for i := 1 to min(scrH - 1, 79) do
+    for i := 1 to min(scrH - 1, 100) do
     begin
       l := board[1, i];
       k := 1;
-      for j := 2 to min(scrW div 2, 63) do
+      for j := 2 to min(scrW div 2, 100) do
       begin
         if (board[j, i] <> l) then
         begin
@@ -59,8 +59,8 @@ type
         3: txtB(LightRed);
       end;
       Write('': (j - k + 1) * 2);
-      {if (scrW mod 2 <> 0) then
-        writeln;}
+      if (scrW > 201) then // Only writeln if the play area is smaller than window size
+        writeln;            // or else console will auto advance to next line
     end;
     gotoxy(1, scrH);
     txtB(Yellow);
@@ -79,8 +79,8 @@ type
           score := score + 1;
           sbody[score] := sbody[score - 1];
           repeat
-            r1 := random(min(scrH - 1, 79) - 2) + 2;
-            r2 := random(min(scrW div 2, 63) - 2) + 2;
+            r1 := random(min(scrH - 1, 100) - 2) + 2;
+            r2 := random(min(scrW div 2, 100) - 2) + 2;
           until board[r2, r1] = 0;
           board[r2, r1] := 3;
           gotoxy(r2 * 2 - 1, r1);
@@ -190,11 +190,11 @@ type
           else
           begin
             gotoxy(1, scrH div 2 - 2);
-            for i := scrH div 2 - 2 to min(scrH div 2 + 2, 79) do
+            for i := scrH div 2 - 2 to min(scrH div 2 + 2, 100) do
             begin
               l := board[1, i];
               k := 1;
-              for j := 2 to min(scrW div 2, 63) do
+              for j := 2 to min(scrW div 2, 100) do
               begin
                 if (board[j, i] <> l) then
                 begin
