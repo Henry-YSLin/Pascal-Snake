@@ -1,13 +1,11 @@
 {
   TODO:
-  Fix slow rendering outside boundary
-  Fix boundary disappearing
   Enhance AI
   Large screen render error
 }
 
 const
-  bSize = 60;
+  bSize = 100;
   pCnt  = 10;
 type
   player = record
@@ -23,7 +21,7 @@ type
     i, j, l, t, k, camX, camY, r1, r2: integer;
     ts: real;
     map: array[1..bSize, 1..bSize] of integer;
-    buffer: array[1..63, 1..79] of integer;
+    buffer: array[1..100, 1..100] of integer;
     //buffer before writing to screen to only write diffs
     snakes: array[1..pCnt] of player;         //the first snake is always the player
     c: char;
@@ -55,8 +53,8 @@ type
     for i := 1 to bSize do
       for j := 1 to bSize do
         map[j, i] := Ord((i = 1) or (j = 1) or (i = bSize) or (j = bSize)) * -1;
-    for i := 1 to 63 do
-      for j := 1 to 79 do
+    for i := 1 to 100 do
+      for j := 1 to 100 do
         buffer[i, j] := 0;
     gotoxy(1, scrH);
     txtB(Yellow);
@@ -158,6 +156,7 @@ type
             if (buffer[1, i - camY + 1] <> 0) then
             begin
               l := 0;
+              buffer[1, i - camY + 1] := 0;
             end
             else
             begin
@@ -180,6 +179,7 @@ type
               if (buffer[j - camX + 1, i - camY + 1] <> 0) then
               begin
                 t := 0;
+                buffer[j - camX + 1, i - camY + 1] := 0;
               end
               else
               begin
