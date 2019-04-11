@@ -1,7 +1,3 @@
-{
-  Fix food outside boundary
-}
-
 type
   point = record
     x: integer;
@@ -85,9 +81,9 @@ type
           repeat
             r1 := random(min(scrH - 1, 79) - 2) + 2;
             r2 := random(min(scrW div 2, 63) - 2) + 2;
-          until board[r1, r2] = 0;
-          board[r1, r2] := 3;
-          gotoxy(r1 * 2 - 1, r2);
+          until board[r2, r1] = 0;
+          board[r2, r1] := 3;
+          gotoxy(r2 * 2 - 1, r1);
           txtB(LightRed);
           Write('': 2);
         end
