@@ -190,6 +190,13 @@ type
           else
           begin
             gotoxy(1, scrH div 2 - 2);
+            txtB(Black);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
+            gotoxy(1, scrH div 2 - 2);
             for i := scrH div 2 - 2 to min(scrH div 2 + 2, 100) do
             begin
               l := board[1, i];
@@ -216,8 +223,8 @@ type
                 3: txtB(LightRed);
               end;
               Write('': (j - k + 1) * 2);
-              {if (scrW mod 2 <> 0) then
-                  writeln;}
+              if (scrW > 201) then // Only writeln if the play area is smaller than window size
+                writeln;            // or else console will auto advance to next line
             end;
           end;
         end;

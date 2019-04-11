@@ -138,12 +138,12 @@ type
                     map[j, k] := 0;
           end;
         end;
-        camX := snakes[1].x - scrW div 4;
-        camY := snakes[1].y - (scrH - 1) div 2;
+        camX := snakes[1].x - min(scrW div 2, 100) div 2;
+        camY := snakes[1].y - min(scrH - 1, 100) div 2;
         //camX := 1;
         //camY := 2;
         gtxy := True;
-        for i := camY to camY + scrH - 2 do
+        for i := camY to camY + min(scrH - 1, 100) - 1 do
         begin
           k := camX;
           if (gtxy) then
@@ -172,7 +172,7 @@ type
           begin
             l := -2;
           end;
-          for j := camX + 1 to camX + scrW div 2 - 1 do
+          for j := camX + 1 to camX + min(scrW div 2, 100) - 1 do
           begin
             if (j < 1) or (i < 1) or (j > bSize) or (i > bSize) then
             begin
@@ -318,9 +318,17 @@ type
             snakes[1].dead := True
           else
           begin
+            gotoxy(1, scrH div 2 - 2);
+            txtB(Black);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
+            write('':scrW-1);
             for i := 1 to scrW div 2 do
               for j := scrH div 2 - 2 to scrH div 2 + 2 do
-                buffer[i, j] := -2;
+                if (i < 100) and (j < 100) then
+                  buffer[i, j] := -2;
           end;
         end;
       end;
