@@ -119,8 +119,11 @@ type
         else if (d = 4) then
           sbody[score].y := sbody[score].y - 1;
         board[sbody[score].x, sbody[score].y] := 2;
-        gotoxy(sbody[score].x * 2 - 1, sbody[score].y);
+        gotoxy(sbody[score-1].x * 2 - 1, sbody[score-1].y);
         txtB(LightBlue);
+        Write('': 2);
+        gotoxy(sbody[score].x * 2 - 1, sbody[score].y);
+        txtB(Blue);
         Write('': 2);
 
         txtB(LightCyan);

@@ -5,7 +5,7 @@ type
   player = record
     x, y, vx, vy: integer;
     score: longint;
-    color: byte;
+    color, headColor: byte;
     dead:  boolean;
     turn:  integer;
   end;
@@ -35,13 +35,14 @@ type
       snakes[i].dead := False;
       snakes[i].score := 1;
       snakes[i].turn := 0;
-      map[r1, r2] := i + pCnt;
+      map[r1, r2] := -i-10;
       if (snakes[i].x > bSize div 2) then
         snakes[i].vx := -1
       else
         snakes[i].vx := 1;
       snakes[i].vy := 0;
       snakes[i].color := i mod 7 + 9;
+      snakes[i].headColor := Blue;
     end;
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     for i := 1 to bSize do
@@ -63,12 +64,13 @@ type
         begin
           if snakes[i].dead then
             continue;
+          map[snakes[i].x, snakes[i].y] := i;
           snakes[i].x := snakes[i].x + snakes[i].vx;
           snakes[i].y := snakes[i].y + snakes[i].vy;
           if (map[snakes[i].x, snakes[i].y] = 0) then
           begin
             snakes[i].score := snakes[i].score + 1;
-            map[snakes[i].x, snakes[i].y] := i;
+            map[snakes[i].x, snakes[i].y] := -i-10;
             if (i = 1) then
               continue;
             snakes[i].turn := snakes[i].turn + 1;
@@ -129,19 +131,23 @@ type
           begin
             snakes[i].dead := True;
             if (map[snakes[i].x, snakes[i].y] <> -1) then
-              snakes[map[snakes[i].x, snakes[i].y]].score :=
-                snakes[map[snakes[i].x, snakes[i].y]].score + snakes[i].score;
+              if map[snakes[i].x, snakes[i].y] > 0 then
+                snakes[map[snakes[i].x, snakes[i].y]].score :=
+                  snakes[map[snakes[i].x, snakes[i].y]].score + snakes[i].score
+              else
+                snakes[-map[snakes[i].x, snakes[i].y]-10].score :=
+                  snakes[-map[snakes[i].x, snakes[i].y]-10].score + snakes[i].score;
               //TODO clear snake body
               for j := 1 to bSize do
                 for k := 1 to bSize do
-                  if map[j, k] = i then
+                  if (map[j, k] = i) or (map[j, k] = -i-10) then
                     map[j, k] := 0;
           end;
         end;
         camX := snakes[1].x - min(scrW div 2, 100) div 2;
         camY := snakes[1].y - min(scrH - 1, 100) div 2;
-        camX := 1;
-        camY := 2;
+        // camX := 1;
+        // camY := 2;
         gtxy := True;
         for i := camY to camY + min(scrH - 1, 100) - 1 do
         begin
@@ -208,6 +214,8 @@ type
                 txtB(LightGray)
               else if (l = 0) then
                 txtB(black)
+              else if (l < -10) then
+                txtB(snakes[-map[k, i]-10].headColor)
               else
                 txtB(snakes[map[k, i]].color);
               if (l <> -2) then
@@ -228,6 +236,8 @@ type
             txtB(LightGray)
           else if (l = 0) then
             txtB(black)
+          else if (l < -10) then
+            txtB(snakes[-map[k, i]-10].headColor)
           else
             txtB(snakes[map[k, i]].color);
           if (l <> -2) then
@@ -332,7 +342,7 @@ type
           end;
         end;
       end;
-    until false;//snakes[1].dead;
+    until snakes[1].dead;
     delay(500);
 
   end;
