@@ -1,11 +1,5 @@
-{
-  TODO:
-  Enhance AI
-  Large screen render error
-}
-
 const
-  bSize = 100;
+  bSize = 60;
   pCnt  = 10;
 type
   player = record
@@ -86,12 +80,11 @@ type
               (map[snakes[i].x + snakes[i].vx * r1, snakes[i].y +
                 snakes[i].vy * r1] = 0) do
               r1 := r1 + 1;
-            if (r1=1) and (random((r1 - 1) * 10 + 1) = 0) or ((snakes[i].turn > 100000) and
+            if (r1=1) or (random((r1 - 1) * 10 + 1) = 0) or ((snakes[i].turn > 10) and
               (random(20) = 1)) then
             begin
               if (snakes[i].vx = 0) then
               begin
-                snakes[i].vy := 0;
                 r1 := 1;
                 while (snakes[i].x - r1 > 0) and
                   (map[snakes[i].x - r1, snakes[i].y] = 0) do
@@ -101,14 +94,17 @@ type
                   (map[snakes[i].x + r2, snakes[i].y] = 0) do
                   r2 := r2 + 1;
                 if (r1 > 1) or (r2 > 1) then
+                begin
                   if (r1 > r2) then
                     snakes[i].vx := -1
                   else
                     snakes[i].vx := 1;
+                  snakes[i].vy := 0;
+                  snakes[i].turn := 0;
+                end;
               end
               else
               begin
-                snakes[i].vx := 0;
                 r1 := 1;
                 while (snakes[i].y - r1 > 0) and
                   (map[snakes[i].x, snakes[i].y - r1] = 0) do
@@ -118,10 +114,14 @@ type
                   (map[snakes[i].x, snakes[i].y + r2] = 0) do
                   r2 := r2 + 1;
                 if (r1 > 1) or (r2 > 1) then
+                begin
                   if (r1 > r2) then
                     snakes[i].vy := -1
                   else
                     snakes[i].vy := 1;
+                  snakes[i].vx := 0;
+                  snakes[i].turn := 0;
+                end;
               end;
             end;
           end
@@ -140,8 +140,8 @@ type
         end;
         camX := snakes[1].x - min(scrW div 2, 100) div 2;
         camY := snakes[1].y - min(scrH - 1, 100) div 2;
-        //camX := 1;
-        //camY := 2;
+        camX := 1;
+        camY := 2;
         gtxy := True;
         for i := camY to camY + min(scrH - 1, 100) - 1 do
         begin
@@ -332,7 +332,7 @@ type
           end;
         end;
       end;
-    until snakes[1].dead;
+    until false;//snakes[1].dead;
     delay(500);
 
   end;
