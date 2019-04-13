@@ -1,6 +1,9 @@
 const
   bSize = 60;
   pCnt  = 10;
+  btDelay = 50;
+  maxBoost = 5;
+  boostRegenDelay = 10;
 type
   player = record
     x, y, vx, vy: integer;
@@ -8,6 +11,8 @@ type
     color, headColor: byte;
     dead:  boolean;
     turn:  integer;
+    boost,boostRegen : integer;
+    boosting : boolean;
   end;
 
   procedure battleMode();
@@ -21,6 +26,7 @@ type
     c: char;
     choice: integer;
     gtxy: boolean;
+    tmp : string;
   begin
     txtB(Black);
     ClrScr();
@@ -43,6 +49,9 @@ type
       snakes[i].vy := 0;
       snakes[i].color := i mod 7 + 9;
       snakes[i].headColor := Blue;
+      snakes[i].boost := maxBoost;
+      snakes[i].boostRegen := 0;
+      snakes[i].boosting := false;
     end;
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     for i := 1 to bSize do
@@ -58,90 +67,108 @@ type
     printButton(4, scrH, 4, 1, 'DOWN', 2);
     printButton(9, scrH, 4, 1, 'LEFT', 2);
     printButton(14, scrH, 5, 1, 'RIGHT', 2);
+    printButton(20, scrH, 5, 1, 'SPACE', 2);
     repeat
       repeat
         for i := 1 to pCnt do
         begin
-          if snakes[i].dead then
-            continue;
-          map[snakes[i].x, snakes[i].y] := i;
-          snakes[i].x := snakes[i].x + snakes[i].vx;
-          snakes[i].y := snakes[i].y + snakes[i].vy;
-          if (map[snakes[i].x, snakes[i].y] = 0) then
+          if (snakes[i].boosting) then
           begin
-            snakes[i].score := snakes[i].score + 1;
-            map[snakes[i].x, snakes[i].y] := -i-10;
-            if (i = 1) then
+            snakes[i].boost := max(0,snakes[i].boost - 1);
+            if snakes[i].boost <= 0 then
+              snakes[i].boosting := false
+            else
+              snakes[i].boostRegen := 0;
+          end;
+          if (not snakes[i].boosting) then
+          begin
+            snakes[i].boostRegen := min(boostRegenDelay,snakes[i].boostRegen + 1);
+            if (snakes[i].boostRegen >= boostRegenDelay) then
+              snakes[i].boost := min(maxBoost,snakes[i].boost + 1);
+          end;
+          for l := 1 to 1+ord(snakes[i].boosting) do
+          begin
+            if snakes[i].dead then
               continue;
-            snakes[i].turn := snakes[i].turn + 1;
-            r1 := 1;
-            while (snakes[i].x + snakes[i].vx * r1 > 0) and
-              (snakes[i].y + snakes[i].vy * r1 > 0) and
-              (snakes[i].x + snakes[i].vx * r1 <= bSize) and
-              (snakes[i].y + snakes[i].vy * r1 <= bSize) and
-              (map[snakes[i].x + snakes[i].vx * r1, snakes[i].y +
-                snakes[i].vy * r1] = 0) do
-              r1 := r1 + 1;
-            if (r1=1) or (random((r1 - 1) * 10 + 1) = 0) or ((snakes[i].turn > 10) and
-              (random(20) = 1)) then
+            map[snakes[i].x, snakes[i].y] := i;
+            snakes[i].x := snakes[i].x + snakes[i].vx;
+            snakes[i].y := snakes[i].y + snakes[i].vy;
+            if (map[snakes[i].x, snakes[i].y] = 0) then
             begin
-              if (snakes[i].vx = 0) then
+              snakes[i].score := snakes[i].score + 1;
+              map[snakes[i].x, snakes[i].y] := -i-10;
+              if (i = 1) then
+                continue;
+              snakes[i].turn := snakes[i].turn + 1;
+              r1 := 1;
+              while (snakes[i].x + snakes[i].vx * r1 > 0) and
+                (snakes[i].y + snakes[i].vy * r1 > 0) and
+                (snakes[i].x + snakes[i].vx * r1 <= bSize) and
+                (snakes[i].y + snakes[i].vy * r1 <= bSize) and
+                (map[snakes[i].x + snakes[i].vx * r1, snakes[i].y +
+                  snakes[i].vy * r1] = 0) do
+                r1 := r1 + 1;
+              if (r1=1) or (random((r1 - 1) * 10 + 1) = 0) or ((snakes[i].turn > 10) and
+                (random(20) = 1)) then
               begin
-                r1 := 1;
-                while (snakes[i].x - r1 > 0) and
-                  (map[snakes[i].x - r1, snakes[i].y] = 0) do
-                  r1 := r1 + 1;
-                r2 := 1;
-                while (snakes[i].x + r2 <= bSize) and
-                  (map[snakes[i].x + r2, snakes[i].y] = 0) do
-                  r2 := r2 + 1;
-                if (r1 > 1) or (r2 > 1) then
+                if (snakes[i].vx = 0) then
                 begin
-                  if (r1 > r2) then
-                    snakes[i].vx := -1
-                  else
-                    snakes[i].vx := 1;
-                  snakes[i].vy := 0;
-                  snakes[i].turn := 0;
-                end;
-              end
-              else
-              begin
-                r1 := 1;
-                while (snakes[i].y - r1 > 0) and
-                  (map[snakes[i].x, snakes[i].y - r1] = 0) do
-                  r1 := r1 + 1;
-                r2 := 1;
-                while (snakes[i].y + r2 <= bSize) and
-                  (map[snakes[i].x, snakes[i].y + r2] = 0) do
-                  r2 := r2 + 1;
-                if (r1 > 1) or (r2 > 1) then
+                  r1 := 1;
+                  while (snakes[i].x - r1 > 0) and
+                    (map[snakes[i].x - r1, snakes[i].y] = 0) do
+                    r1 := r1 + 1;
+                  r2 := 1;
+                  while (snakes[i].x + r2 <= bSize) and
+                    (map[snakes[i].x + r2, snakes[i].y] = 0) do
+                    r2 := r2 + 1;
+                  if (r1 > 1) or (r2 > 1) then
+                  begin
+                    if (r1 > r2) then
+                      snakes[i].vx := -1
+                    else
+                      snakes[i].vx := 1;
+                    snakes[i].vy := 0;
+                    snakes[i].turn := 0;
+                  end;
+                end
+                else
                 begin
-                  if (r1 > r2) then
-                    snakes[i].vy := -1
-                  else
-                    snakes[i].vy := 1;
-                  snakes[i].vx := 0;
-                  snakes[i].turn := 0;
+                  r1 := 1;
+                  while (snakes[i].y - r1 > 0) and
+                    (map[snakes[i].x, snakes[i].y - r1] = 0) do
+                    r1 := r1 + 1;
+                  r2 := 1;
+                  while (snakes[i].y + r2 <= bSize) and
+                    (map[snakes[i].x, snakes[i].y + r2] = 0) do
+                    r2 := r2 + 1;
+                  if (r1 > 1) or (r2 > 1) then
+                  begin
+                    if (r1 > r2) then
+                      snakes[i].vy := -1
+                    else
+                      snakes[i].vy := 1;
+                    snakes[i].vx := 0;
+                    snakes[i].turn := 0;
+                  end;
                 end;
               end;
+            end
+            else
+            begin
+              snakes[i].dead := True;
+              if (map[snakes[i].x, snakes[i].y] <> -1) then
+                if map[snakes[i].x, snakes[i].y] > 0 then
+                  snakes[map[snakes[i].x, snakes[i].y]].score :=
+                    snakes[map[snakes[i].x, snakes[i].y]].score + snakes[i].score
+                else
+                  snakes[-map[snakes[i].x, snakes[i].y]-10].score :=
+                    snakes[-map[snakes[i].x, snakes[i].y]-10].score + snakes[i].score;
+                //TODO clear snake body
+                for j := 1 to bSize do
+                  for k := 1 to bSize do
+                    if (map[j, k] = i) or (map[j, k] = -i-10) then
+                      map[j, k] := 0;
             end;
-          end
-          else
-          begin
-            snakes[i].dead := True;
-            if (map[snakes[i].x, snakes[i].y] <> -1) then
-              if map[snakes[i].x, snakes[i].y] > 0 then
-                snakes[map[snakes[i].x, snakes[i].y]].score :=
-                  snakes[map[snakes[i].x, snakes[i].y]].score + snakes[i].score
-              else
-                snakes[-map[snakes[i].x, snakes[i].y]-10].score :=
-                  snakes[-map[snakes[i].x, snakes[i].y]-10].score + snakes[i].score;
-              //TODO clear snake body
-              for j := 1 to bSize do
-                for k := 1 to bSize do
-                  if (map[j, k] = i) or (map[j, k] = -i-10) then
-                    map[j, k] := 0;
           end;
         end;
         camX := snakes[1].x - min(scrW div 2, 100) div 2;
@@ -249,14 +276,20 @@ type
         r1 := 0;
         for i := 1 to pCnt do
           r1 := r1 + Ord(not snakes[i].dead);
-        gotoxy(scrW div 2 - length(' Score: ' + IntToStr(snakes[1].score) +
+        tmp := ' Score: ' + IntToStr(snakes[1].score) +
           ' ' + IntToStr(snakes[1].x) + ',' + IntToStr(Snakes[1].y) +
-          ' ' + IntToStr(r1) + ' ') div 2, scrH);
-        Write(' Score: ', snakes[1].score, ' ', snakes[1].x, ',',
-          Snakes[1].y, ' ', r1, ' ');
+          ' ' + IntToStr(r1) + ' ';
+        gotoxy(scrW div 2 - length(tmp) div 2, scrH);
+        Write(tmp);
+        gotoxy(scrW-12,scrH);
+        txtB(Magenta);
+        write('':10);
+        gotoxy(scrW-2-10*snakes[1].boost div maxBoost,scrH);
+        txtB(LightMagenta);
+        write('':10*snakes[1].boost div maxBoost);
         repeat
           delay(1);
-        until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > 50;
+        until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > btDelay;
         ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
       until keypressed or snakes[1].dead;
       if (not snakes[1].dead) then
@@ -283,6 +316,10 @@ type
         begin
           snakes[1].vx := 0;
           snakes[1].vy := -1;
+        end
+        else if (c = ' ') then
+        begin
+          snakes[1].boosting := not snakes[1].boosting;
         end
         else if (c = #27) then
         begin

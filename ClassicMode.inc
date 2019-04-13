@@ -1,3 +1,6 @@
+const
+  ctDelay = 50;
+  foodCnt = 50;
 type
   point = record
     x: integer;
@@ -24,7 +27,7 @@ type
       for j := 1 to min(scrW div 2, 100) do
         board[j, i] := Ord((i = 1) or (j = 1) or (i = min(scrH - 1, 100)) or
           (j = min(scrW div 2, 100)));
-    for i := 1 to 1000 do
+    for i := 1 to foodCnt do
       board[random(min(scrW div 2, 100) - 2) + 2, random(min(scrH - 1, 100) - 2) + 2] := 3;
     sBody[1].x := min(scrW div 4, 100) - 2;
     sBody[1].y := min(scrH - 1, 100) div 2;
@@ -132,7 +135,7 @@ type
         Write(' Score: ', score, ' ');
         repeat
           delay(1);
-        until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > 50;
+        until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > ctDelay;
         ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
       until keypressed or dead;
       if (not dead) then
