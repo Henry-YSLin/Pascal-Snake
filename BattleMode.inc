@@ -1,6 +1,6 @@
 const
-  bSize = 60;
-  pCnt  = 10;
+  bSize = 600;
+  pCnt  = 1000;
   btDelay = 50;
   maxBoost = 5;
   boostRegenDelay = 10;
@@ -20,8 +20,7 @@ type
     i, j, l, t, k, camX, camY, r1, r2: integer;
     ts: real;
     map: array[1..bSize, 1..bSize] of integer;
-    buffer: array[1..100, 1..100] of integer;
-    //buffer before writing to screen to only write diffs
+    buffer: array[1..100, 1..100] of integer; //buffer before writing to screen to only write diffs
     snakes: array[1..pCnt] of player;         //the first snake is always the player
     c: char;
     choice: integer;
@@ -30,6 +29,11 @@ type
   begin
     txtB(Black);
     ClrScr();
+    {Create map borders}
+    for i := 1 to bSize do
+      for j := 1 to bSize do
+        map[j, i] := Ord((i = 1) or (j = 1) or (i = bSize) or (j = bSize)) * -1;
+    {Initialize snakes}
     for i := 1 to pCnt do
     begin
       repeat
@@ -42,11 +46,22 @@ type
       snakes[i].score := 1;
       snakes[i].turn := 0;
       map[r1, r2] := -i-10;
-      if (snakes[i].x > bSize div 2) then
-        snakes[i].vx := -1
+      if (random(2) = 0) then
+      begin
+        if (snakes[i].x > bSize div 2) then
+          snakes[i].vx := -1
+        else
+          snakes[i].vx := 1;
+        snakes[i].vy := 0;
+      end
       else
-        snakes[i].vx := 1;
-      snakes[i].vy := 0;
+      begin
+        if (snakes[i].y > bSize div 2) then
+          snakes[i].vy := -1
+        else
+          snakes[i].vy := 1;
+        snakes[i].vx := 0;
+      end;
       snakes[i].color := i mod 7 + 9;
       snakes[i].headColor := Blue;
       snakes[i].boost := maxBoost;
@@ -54,12 +69,11 @@ type
       snakes[i].boosting := false;
     end;
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
-    for i := 1 to bSize do
-      for j := 1 to bSize do
-        map[j, i] := Ord((i = 1) or (j = 1) or (i = bSize) or (j = bSize)) * -1;
+    {Init buffer}
     for i := 1 to 100 do
       for j := 1 to 100 do
         buffer[i, j] := 0;
+    {Draw keyboard hints}
     gotoxy(1, scrH);
     txtB(Yellow);
     ClrEol();
@@ -68,10 +82,14 @@ type
     printButton(9, scrH, 4, 1, 'LEFT', 2);
     printButton(14, scrH, 5, 1, 'RIGHT', 2);
     printButton(20, scrH, 5, 1, 'SPACE', 2);
+    {Main game loop}
     repeat
+      {Render loop}
       repeat
+        {Update each snake}
         for i := 1 to pCnt do
         begin
+          {Update boost}
           if (snakes[i].boosting) then
           begin
             snakes[i].boost := max(0,snakes[i].boost - 1);
@@ -86,6 +104,7 @@ type
             if (snakes[i].boostRegen >= boostRegenDelay) then
               snakes[i].boost := min(maxBoost,snakes[i].boost + 1);
           end;
+          {Update movements}
           for l := 1 to 1+ord(snakes[i].boosting) do
           begin
             if snakes[i].dead then
@@ -97,9 +116,11 @@ type
             begin
               snakes[i].score := snakes[i].score + 1;
               map[snakes[i].x, snakes[i].y] := -i-10;
+              {Start of AI area}
               if (i = 1) then
                 continue;
               snakes[i].turn := snakes[i].turn + 1;
+              {Measure forward distance}
               r1 := 1;
               while (snakes[i].x + snakes[i].vx * r1 > 0) and
                 (snakes[i].y + snakes[i].vy * r1 > 0) and
@@ -108,9 +129,12 @@ type
                 (map[snakes[i].x + snakes[i].vx * r1, snakes[i].y +
                   snakes[i].vy * r1] = 0) do
                 r1 := r1 + 1;
+              {Decide to turn}
               if (r1=1) or (random((r1 - 1) * 10 + 1) = 0) or ((snakes[i].turn > 10) and
                 (random(20) = 1)) then
               begin
+                {Always turn sideways and choose the side with longer distance}
+                {Don't turn if both sides are deadly}
                 if (snakes[i].vx = 0) then
                 begin
                   r1 := 1;
@@ -155,7 +179,9 @@ type
             end
             else
             begin
+              {Hit something}
               snakes[i].dead := True;
+              {Transfer scores}
               if (map[snakes[i].x, snakes[i].y] <> -1) then
                 if map[snakes[i].x, snakes[i].y] > 0 then
                   snakes[map[snakes[i].x, snakes[i].y]].score :=
@@ -163,18 +189,26 @@ type
                 else
                   snakes[-map[snakes[i].x, snakes[i].y]-10].score :=
                     snakes[-map[snakes[i].x, snakes[i].y]-10].score + snakes[i].score;
-                //TODO clear snake body
-                for j := 1 to bSize do
-                  for k := 1 to bSize do
-                    if (map[j, k] = i) or (map[j, k] = -i-10) then
-                      map[j, k] := 0;
+              {Remove snake body}
+              for j := 1 to bSize do
+                for k := 1 to bSize do
+                  if (map[j, k] = i) or (map[j, k] = -i-10) then
+                    map[j, k] := 0;
             end;
           end;
         end;
-        camX := snakes[1].x - min(scrW div 2, 100) div 2;
-        camY := snakes[1].y - min(scrH - 1, 100) div 2;
-        // camX := 1;
-        // camY := 2;
+        {Update camera position}
+        i := 1;
+        while (snakes[i].dead) do
+        begin
+          i := i + 1;
+        end;
+        camX := snakes[i].x - min(scrW div 2, 100) div 2;
+        camY := snakes[i].y - min(scrH - 1, 100) div 2;
+        // {Static camera for debug}
+        // camX := bSize div 2 - min(scrW div 2, 100) div 2;
+        // camY := bSize div 2 - min(scrH - 1, 100) div 2;
+        {Update buffer and render diffs}
         gtxy := True;
         for i := camY to camY + min(scrH - 1, 100) - 1 do
         begin
@@ -271,6 +305,7 @@ type
             Write('': (j - k + 1) * 2);
         end;
 
+        {Render text at the bottom of the screen}
         txtB(LightCyan);
         txtC(Black);
         r1 := 0;
@@ -287,13 +322,18 @@ type
         gotoxy(scrW-2-10*snakes[1].boost div maxBoost,scrH);
         txtB(LightMagenta);
         write('':10*snakes[1].boost div maxBoost);
+
+        {Wait for a short time before next frame}
+        {Try to compensate for the time used above by shortening wait time}
         repeat
           delay(1);
         until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > btDelay;
         ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
+        {Repeats updating and rendering until key pressed or player dead}
       until keypressed or snakes[1].dead;
       if (not snakes[1].dead) then
       begin
+        {Handle key press}
         c := readkey;
         if (c = #0) then
           c := readkey;
@@ -323,6 +363,7 @@ type
         end
         else if (c = #27) then
         begin
+          {Pause key}
           txtB(Cyan);
           txtC(White);
           gotoxy(1, scrH div 2 - 2);
@@ -337,6 +378,8 @@ type
           gotoxy(1, scrH div 2 + 2);
           ClrEol();
           choice := 1;
+          {Wait for user input}
+          {Basically hangs process with this loop to pause game}
           repeat
             printButton(scrW - 20, scrH div 2 - 1, 8, 0, 'Resume', choice = 1);
             printButton(scrW - 10, scrH div 2 - 1, 8, 0, 'Quit', choice = 2);
@@ -365,6 +408,7 @@ type
             snakes[1].dead := True
           else
           begin
+            {Unpause game, invalidate buffer}
             gotoxy(1, scrH div 2 - 2);
             txtB(Black);
             write('':scrW-1);

@@ -1,5 +1,5 @@
 unit FastConsole;
-
+{Fast console output trick}
 {$MODE DELPHI}
 
 interface

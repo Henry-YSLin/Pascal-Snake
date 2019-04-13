@@ -1,3 +1,4 @@
+  {Print SNAKE banner}
   procedure printTitle();
   var
     bg: array[1..18] of string;
@@ -107,6 +108,7 @@
     end;
   end;
 
+  {Print gradient background}
   procedure printBG();
   var
     bg: array[1..80] of string;
@@ -388,6 +390,7 @@
     end;
   end;
 
+  {Print button of any size}
   procedure printButton(x, y, w, h: integer; s: string; selected: integer);
   var
     i: integer;
@@ -481,6 +484,7 @@
     printbutton(x, y, w, h, s, Ord(selected));
   end;
 
+  {The whole start screen as a game mode prompt}
   function startScreen(): integer;
   var
     choice: integer;

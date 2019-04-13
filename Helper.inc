@@ -33,6 +33,7 @@ const
 var
   scrW, scrH: integer;
 
+  {Measure screen width and height}
   procedure measureScr;
   begin
     scrW := WindMaxX+1;

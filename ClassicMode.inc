@@ -23,12 +23,15 @@ type
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     dead := False;
     d  := 1;
+    {Create map borders}
     for i := 1 to min(scrH - 1, 100) do
       for j := 1 to min(scrW div 2, 100) do
         board[j, i] := Ord((i = 1) or (j = 1) or (i = min(scrH - 1, 100)) or
           (j = min(scrW div 2, 100)));
+    {Create food}
     for i := 1 to foodCnt do
       board[random(min(scrW div 2, 100) - 2) + 2, random(min(scrH - 1, 100) - 2) + 2] := 3;
+    {Initialize snake}
     sBody[1].x := min(scrW div 4, 100) - 2;
     sBody[1].y := min(scrH - 1, 100) div 2;
     sBody[2].x := min(scrW div 4, 100) - 1;
@@ -36,6 +39,7 @@ type
     sBody[3].x := min(scrW div 4, 100);
     sBody[3].y := min(scrH - 1, 100) div 2;
     gotoxy(1, 1);
+    {Initial rendering}
     for i := 1 to min(scrH - 1, 100) do
     begin
       l := board[1, i];
@@ -62,9 +66,12 @@ type
         3: txtB(LightRed);
       end;
       Write('': (j - k + 1) * 2);
-      if (scrW > 201) then // Only writeln if the play area is smaller than window size
-        writeln;            // or else console will auto advance to next line
+      {Only writeln if the play area is smaller than window size}
+      {or else console will auto advance to next line}
+      if (scrW > 201) then
+        writeln;
     end;
+    {Draw keyboard hints}
     gotoxy(1, scrH);
     txtB(Yellow);
     ClrEol();
@@ -72,13 +79,17 @@ type
     printButton(4, scrH, 4, 1, 'DOWN', 2);
     printButton(9, scrH, 4, 1, 'LEFT', 2);
     printButton(14, scrH, 5, 1, 'RIGHT', 2);
+    {Main game loop}
     repeat
+      {Render loop}
       repeat
+        {Update snake}
         if ((d = 1) and (board[sbody[score].x + 1, sbody[score].y] = 3)) or
           ((d = 2) and (board[sbody[score].x, sbody[score].y + 1] = 3)) or
           ((d = 3) and (board[sbody[score].x - 1, sbody[score].y] = 3)) or
           ((d = 4) and (board[sbody[score].x, sbody[score].y - 1] = 3)) then
         begin
+          {Hit food}
           score := score + 1;
           sbody[score] := sbody[score - 1];
           repeat
@@ -95,6 +106,7 @@ type
           ((d = 3) and (board[sbody[score].x - 1, sbody[score].y] = 2)) or
           ((d = 4) and (board[sbody[score].x, sbody[score].y - 1] = 2)) then
         begin
+          {Hit snake body}
           dead := True;
         end
         else if ((d = 1) and (board[sbody[score].x + 1, sbody[score].y] = 1)) or
@@ -102,10 +114,12 @@ type
           ((d = 3) and (board[sbody[score].x - 1, sbody[score].y] = 1)) or
           ((d = 4) and (board[sbody[score].x, sbody[score].y - 1] = 1)) then
         begin
+          {Hit wall}
           dead := True;
         end
         else
         begin
+          {Hit nothing}
           board[sbody[1].x, sbody[1].y] := 0;
           gotoxy(sbody[1].x * 2 - 1, sbody[1].y);
           txtB(Black);
@@ -113,6 +127,7 @@ type
           for i := 2 to score do
             sbody[i - 1] := sbody[i];
         end;
+        {Move snake}
         if (d = 1) then
           sbody[score].x := sbody[score].x + 1
         else if (d = 2) then
@@ -122,6 +137,7 @@ type
         else if (d = 4) then
           sbody[score].y := sbody[score].y - 1;
         board[sbody[score].x, sbody[score].y] := 2;
+        {Draw moved parts}
         gotoxy(sbody[score-1].x * 2 - 1, sbody[score-1].y);
         txtB(LightBlue);
         Write('': 2);
@@ -129,17 +145,23 @@ type
         txtB(Blue);
         Write('': 2);
 
+        {Render text at the bottom of the screen}
         txtB(LightCyan);
         txtC(Black);
         gotoxy(scrW div 2 - length(' Score:  ' + IntToStr(score)) div 2, scrH);
         Write(' Score: ', score, ' ');
+
+        {Wait for a short time before next frame}
+        {Try to compensate for the time used above by shortening wait time}
         repeat
           delay(1);
         until TimeStampToMSecS(DateTimeToTimeStamp(now)) - ts > ctDelay;
         ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
+        {Repeats updating and rendering until key pressed or player dead}
       until keypressed or dead;
       if (not dead) then
       begin
+        {Handle key press}
         c := readkey;
         if (c = #0) then
           c := readkey;
@@ -153,6 +175,7 @@ type
           d := 4
         else if (c = #27) then
         begin
+          {Pause key}
           txtB(Cyan);
           txtC(White);
           gotoxy(1, scrH div 2 - 2);
@@ -167,6 +190,8 @@ type
           gotoxy(1, scrH div 2 + 2);
           ClrEol();
           choice := 1;
+          {Wait for user input}
+          {Basically hangs process with this loop to pause game}
           repeat
             printButton(scrW - 20, scrH div 2 - 1, 8, 0, 'Resume', choice = 1);
             printButton(scrW - 10, scrH div 2 - 1, 8, 0, 'Quit', choice = 2);
@@ -195,6 +220,7 @@ type
             dead := True
           else
           begin
+            {Unpause game, redraw affected area}
             gotoxy(1, scrH div 2 - 2);
             txtB(Black);
             write('':scrW-1);
@@ -229,8 +255,10 @@ type
                 3: txtB(LightRed);
               end;
               Write('': (j - k + 1) * 2);
-              if (scrW > 201) then // Only writeln if the play area is smaller than window size
-                writeln;            // or else console will auto advance to next line
+              {Only writeln if the play area is smaller than window size}
+              {or else console will auto advance to next line}
+              if (scrW > 201) then
+                writeln;
             end;
           end;
         end;
