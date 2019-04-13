@@ -3,7 +3,8 @@ program Snake;
 uses
   crt,
   Math,
-  SysUtils;
+  SysUtils,
+  FastConsole;
 
 {$I Helper.inc}
 {$I MainMenu.inc}

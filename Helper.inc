@@ -34,27 +34,7 @@ var
   scrW, scrH: integer;
 
   procedure measureScr;
-  var
-    t: integer;
   begin
-    t := 0;
-    scrW := 1;
-    gotoxy(1, 1);
-    while scrW > t do
-    begin
-      t := scrW;
-      Write(' ');
-      scrW := whereX;
-    end;
-    scrW := t + 1;
-    t := 0;
-    scrH := 1;
-    gotoxy(1, 1);
-    while scrH > t do
-    begin
-      t := scrH;
-      writeln;
-      scrH := whereY;
-    end;
-    scrH := scrH;
+    scrW := WindMaxX+1;
+    scrH := WindMaxY;
   end;
