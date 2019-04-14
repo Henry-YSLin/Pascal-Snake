@@ -5,7 +5,7 @@
     btDelay = 50;
     maxBoost = 5;
     boostRegenDelay = 10;
-    invincibleTime = 30;
+    invincibleTime = 40;
   type
     player = record
       x, y, vx, vy: integer;
@@ -121,6 +121,10 @@
               continue;
             if (snakes[i].invincible <= 0) then
               map[snakes[i].x, snakes[i].y] := i
+            else if (snakes[i].tmpBlock < -10) then
+              map[snakes[i].x, snakes[i].y] := (-snakes[i].tmpBlock-10) * ord(not snakes[-snakes[i].tmpBlock-10].dead)
+            else if (snakes[i].tmpBlock > 0) then
+              map[snakes[i].x, snakes[i].y] := snakes[i].tmpBlock*ord(not snakes[snakes[i].tmpBlock].dead)
             else
               map[snakes[i].x, snakes[i].y] := snakes[i].tmpBlock;
             snakes[i].x := snakes[i].x + snakes[i].vx;
@@ -132,7 +136,7 @@
               snakes[i].tmpBlock := map[snakes[i].x, snakes[i].y];
               {Prevent invincibility time out while the snake is in an obstacle}
               if (snakes[i].tmpBlock <> 0) then
-                snakes[i].invincible := max(snakes[i].invincible, 5);
+                snakes[i].invincible := max(snakes[i].invincible, 10);
               map[snakes[i].x, snakes[i].y] := -i-10;
               {Start of AI area}
               if (i = 1) then
