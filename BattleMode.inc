@@ -1,21 +1,20 @@
-const
-  bSize = 600;
-  pCnt  = 1000;
-  btDelay = 50;
-  maxBoost = 5;
-  boostRegenDelay = 10;
-type
-  player = record
-    x, y, vx, vy: integer;
-    score: longint;
-    color, headColor: byte;
-    dead:  boolean;
-    turn:  integer;
-    boost,boostRegen : integer;
-    boosting : boolean;
-  end;
-
   procedure battleMode();
+  const
+    bSize = 600;
+    pCnt  = 1000;
+    btDelay = 50;
+    maxBoost = 5;
+    boostRegenDelay = 10;
+  type
+    player = record
+      x, y, vx, vy: integer;
+      score: longint;
+      color, headColor: byte;
+      dead:  boolean;
+      turn:  integer;
+      boost,boostRegen : integer;
+      boosting : boolean;
+    end;
   var
     i, j, l, t, k, camX, camY, r1, r2: integer;
     ts: real;
@@ -120,6 +119,9 @@ type
               if (i = 1) then
                 continue;
               snakes[i].turn := snakes[i].turn + 1;
+              {Decide to boost}
+              if (random(boostRegenDelay)=0) then
+                snakes[i].boosting := not snakes[i].boosting;
               {Measure forward distance}
               r1 := 1;
               while (snakes[i].x + snakes[i].vx * r1 > 0) and

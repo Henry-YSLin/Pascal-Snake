@@ -1,13 +1,12 @@
-const
-  ctDelay = 50;
-  foodCnt = 50;
-type
-  point = record
-    x: integer;
-    y: integer;
-  end;
-
   procedure classicMode();
+  const
+    ctDelay = 50;
+    foodCnt = 50;
+  type
+    point = record
+      x: integer;
+      y: integer;
+    end;
   var
     i, j, l, k, d, r1, r2, choice: integer;
     ts: real;
