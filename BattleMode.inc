@@ -72,7 +72,8 @@
       snakes[i].invincible := 0;
       snakes[i].tmpBlock := 0;
     end;
-    {Only the player gets invincibility}
+    {Player specific settings}
+    snakes[1].headColor := LightRed;
     snakes[1].invincible := invincibleTime;
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     {Init buffer}
