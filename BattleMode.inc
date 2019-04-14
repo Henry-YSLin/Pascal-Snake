@@ -5,6 +5,7 @@
     btDelay = 50;
     maxBoost = 5;
     boostRegenDelay = 10;
+    invincibleTime = 30;
   type
     player = record
       x, y, vx, vy: integer;
@@ -14,6 +15,8 @@
       turn:  integer;
       boost,boostRegen : integer;
       boosting : boolean;
+      invincible : integer;
+      tmpBlock : integer;
     end;
   var
     i, j, l, t, k, camX, camY, r1, r2: integer;
@@ -66,7 +69,11 @@
       snakes[i].boost := maxBoost;
       snakes[i].boostRegen := 0;
       snakes[i].boosting := false;
+      snakes[i].invincible := 0;
+      snakes[i].tmpBlock := 0;
     end;
+    {Only the player gets invincibility}
+    snakes[1].invincible := invincibleTime;
     ts := TimeStampToMSecS(DateTimeToTimeStamp(now));
     {Init buffer}
     for i := 1 to 100 do
@@ -88,6 +95,9 @@
         {Update each snake}
         for i := 1 to pCnt do
         begin
+          {Update invincibility}
+          if (snakes[i].invincible > 0) then
+            snakes[i].invincible := snakes[i].invincible - 1;
           {Update boost}
           if (snakes[i].boosting) then
           begin
@@ -108,12 +118,20 @@
           begin
             if snakes[i].dead then
               continue;
-            map[snakes[i].x, snakes[i].y] := i;
+            if (snakes[i].invincible <= 0) then
+              map[snakes[i].x, snakes[i].y] := i
+            else
+              map[snakes[i].x, snakes[i].y] := snakes[i].tmpBlock;
             snakes[i].x := snakes[i].x + snakes[i].vx;
             snakes[i].y := snakes[i].y + snakes[i].vy;
-            if (map[snakes[i].x, snakes[i].y] = 0) then
+            if (map[snakes[i].x, snakes[i].y] = 0) or (map[snakes[i].x, snakes[i].y] <> -1) and (snakes[i].invincible > 0) then
             begin
-              snakes[i].score := snakes[i].score + 1;
+              if (snakes[i].invincible <= 0) then
+                snakes[i].score := snakes[i].score + 1;
+              snakes[i].tmpBlock := map[snakes[i].x, snakes[i].y];
+              {Prevent invincibility time out while the snake is in an obstacle}
+              if (snakes[i].tmpBlock <> 0) then
+                snakes[i].invincible := max(snakes[i].invincible, 5);
               map[snakes[i].x, snakes[i].y] := -i-10;
               {Start of AI area}
               if (i = 1) then
